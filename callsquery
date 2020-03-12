@@ -1,0 +1,49 @@
+SELECT z.prospect_id,
+z.prospect_applied, 
+z.prospect_banner_app_completed,
+CASE WHEN z.prospect_banner_admitted IS NULL THEN 0 ELSE 1 END AS prospect_admitted,
+z.prospect_banner_admitted,
+z.prospect_fred,
+z.prospect_fred_date,
+z.prospect_term_appl,
+COUNT(DISTINCT(CASE WHEN z.visit_status = 1 THEN z.visit_id ELSE null END)) AS 'Total Visits to Campus',
+COUNT(DISTINCT z.call_id) AS 'Total Calls',
+COUNT(DISTINCT(CASE WHEN z.call_timestamp < z.prospect_banner_app_completed THEN z.call_id ELSE null END)) AS 'Calls Before Applying',
+COUNT(DISTINCT(CASE WHEN z.call_timestamp > z.prospect_banner_app_completed THEN z.call_id ELSE null END)) AS 'Calls After Applying',
+COUNT(DISTINCT(CASE WHEN z.call_timestamp < z.prospect_banner_admitted THEN z.call_id ELSE null END)) AS 'Calls Before Admission',
+COUNT(DISTINCT(CASE WHEN z.call_timestamp > z.prospect_banner_admitted THEN z.call_id ELSE null END)) AS 'Calls After Admission',
+COUNT(DISTINCT(CASE WHEN z.call_timestamp < z.prospect_fred_date THEN z.call_id ELSE null END)) AS 'Calls Before Deposit',
+COUNT(DISTINCT(CASE WHEN z.call_timestamp > z.prospect_fred_date THEN z.call_id ELSE null END)) AS 'Calls After Deposit',
+COUNT(DISTINCT(CASE WHEN z.call_timestamp < z.visit_registered THEN z.call_id ELSE null END)) AS 'Calls Before Visit Registration',
+MIN(z.call_timestamp) AS 'First Call',
+MIN(y.call_timestamp) AS 'First Call After Applying'
+FROM (SELECT a.*, b.prospect_fred, b.prospect_fred_date, c.visit_registered, c.visit_date, c.visit_status, c.visit_id, b.prospect_term_appl
+FROM (SELECT prospects.prospect_id,
+call_log.call_id,
+call_log.call_timestamp,
+prospects.prospect_banner_app_completed, 
+prospects.prospect_banner_admitted,
+prospects.prospect_applied
+FROM prospects
+LEFT JOIN call_log
+ON prospects.prospect_id = call_log.prospect_id
+JOIN prospect_enroll_history 
+ON prospects.prospect_id = prospect_enroll_history.prospect_id
+WHERE prospect_enroll_history.prospect_enroll_semester = 201990
+AND prospect_enroll_history.prospect_type = 1) a
+LEFT JOIN prospect_appl_data b
+ON a.prospect_id = b.prospect_id
+LEFT JOIN visits c
+ON a.prospect_id = c.prospect_id) z
+LEFT JOIN (SELECT prospects.prospect_id,
+call_log.call_timestamp 
+FROM prospects
+LEFT JOIN call_log
+ON prospects.prospect_id = call_log.prospect_id
+JOIN prospect_enroll_history 
+ON prospects.prospect_id = prospect_enroll_history.prospect_id
+WHERE prospect_enroll_history.prospect_enroll_semester = 201990
+AND prospect_enroll_history.prospect_type = 1
+AND call_log.call_timestamp > prospects.prospect_banner_app_completed) y
+ON z.prospect_id = y.prospect_id
+GROUP BY z.prospect_id
