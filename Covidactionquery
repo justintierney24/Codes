@@ -1,0 +1,173 @@
+SELECT z.id, 
+       y.prospect_status_desc, 
+       x.prospect_type_name, 
+       z.date_action, 
+       z.action, 
+       Year(z.date_action)                                              AS 
+       Year_Action, 
+       Monthname(z.date_action)                                         AS 
+       Month_Action, 
+       Dayofmonth(z.date_action)                                        AS 
+       MonthDay_Action, 
+       Dayofyear(z.date_action)                                         AS 
+       YearDay_Action, 
+       Concat(Monthname(z.date_action), ' ', Dayofmonth(z.date_action)) AS 
+       Proper_DayMonth 
+FROM   (SELECT a.prospect_id                      AS id, 
+               prospect_enroll_history.prospect_type, 
+               a.prospect_status, 
+               a.prospect_banner_app_completed    AS Date_Action, 
+               'Application Completed Per Banner' AS Action 
+        FROM   prospects a 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = a.prospect_id 
+        WHERE  a.prospect_banner_app_completed IS NOT NULL 
+               AND Year(prospect_banner_app_completed) IN ( 
+                   '2015', '2016', '2017', '2018', 
+                   '2019', '2020' ) 
+               AND Month(a.prospect_banner_app_completed) = 3 
+        UNION 
+        SELECT b.prospect_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               b.prospect_fred_date AS Date, 
+               'Deposit Paid'       AS Action 
+        FROM   prospect_appl_data b 
+               JOIN prospects 
+                 ON prospects.prospect_id = b.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = b.prospect_id 
+        WHERE  b.prospect_fred_date IS NOT NULL 
+               AND Year(b.prospect_fred_date) IN ( 
+                   '2015', '2016', '2017', '2018', 
+                   '2019', '2020' ) 
+               AND Month(b.prospect_fred_date) = 3 
+        UNION 
+        SELECT c.prospect_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               c.visit_registered AS Date, 
+               'Visit Scheduled'  AS Action 
+        FROM   visits c 
+               JOIN prospects 
+                 ON prospects.prospect_id = c.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = c.prospect_id 
+        WHERE  c.visit_registered IS NOT NULL 
+               AND Year(c.visit_registered) IN ( '2015', '2016', '2017', '2018', 
+                                                 '2019', '2020' ) 
+               AND Month(c.visit_registered) = 3 
+        UNION 
+        SELECT d.login_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               d.login_timestamp AS Date, 
+               'MyEIU Login'     AS Action 
+        FROM   prospect_logins d 
+               JOIN prospects 
+                 ON prospects.prospect_id = d.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = d.prospect_id 
+        WHERE  d.login_timestamp IS NOT NULL 
+               AND Year(d.login_timestamp) IN ( '2015', '2016', '2017', '2018', 
+                                                '2019', '2020' ) 
+               AND Month(d.login_timestamp) = 3 
+        UNION 
+        SELECT e.prospect_id, 
+               prospect_enroll_history.prospect_type, 
+               e.prospect_status, 
+               e.prospect_reg_finished_date AS Date, 
+               'Reg Finished'               AS Action 
+        FROM   prospects e 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = e.prospect_id 
+        WHERE  e.prospect_reg_finished_date IS NOT NULL 
+               AND Year(e.prospect_reg_finished_date) IN ( 
+                   '2015', '2016', '2017', '2018', 
+                   '2019', '2020' ) 
+               AND Month(e.prospect_reg_finished_date) = 3 
+        UNION 
+        SELECT f.prospect_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               f.housing_app_submit_timestamp AS Date, 
+               'Housing App'                  AS Action 
+        FROM   housing f 
+               JOIN prospects 
+                 ON f.prospect_id = prospects.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = f.prospect_id 
+        WHERE  f.housing_app_submit_timestamp IS NOT NULL 
+               AND Year(f.housing_app_submit_timestamp) IN ( 
+                   '2015', '2016', '2017', '2018', 
+                   '2019', '2020' ) 
+               AND Month(f.housing_app_submit_timestamp) = 3 
+        UNION 
+        SELECT g.prospect_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               g.orient_reg_submitted AS Date, 
+               'Orientation RSVP'     AS Action 
+        FROM   orient_registrations g 
+               JOIN prospects 
+                 ON g.prospect_id = prospects.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = g.prospect_id 
+        WHERE  g.orient_reg_submitted IS NOT NULL 
+               AND Year(g.orient_reg_submitted) IN ( 
+                   '2015', '2016', '2017', '2018', 
+                   '2019', '2020' ) 
+               AND Month(g.orient_reg_submitted) = 3 
+        UNION 
+        SELECT h.prospect_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               h.completed_reqs_date       AS Date, 
+               'Completed FA requirements' AS Action 
+        FROM   prospect_finaid_data h 
+               JOIN prospects 
+                 ON h.prospect_id = prospects.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = h.prospect_id 
+        WHERE  h.completed_reqs_date IS NOT NULL 
+               AND Year(h.completed_reqs_date) IN ( 
+                   '2015', '2016', '2017', '2018', 
+                   '2019', '2020' ) 
+               AND Month(h.completed_reqs_date) = 3 
+        UNION 
+        SELECT i.prospect_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               i.prospect_fafsa_date_received AS Date, 
+               'FAFSA Received'               AS Action 
+        FROM   prospect_finaid_data i 
+               JOIN prospects 
+                 ON i.prospect_id = prospects.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = i.prospect_id 
+        WHERE  i.prospect_fafsa_date_received IS NOT NULL 
+               AND Year(i.prospect_fafsa_date_received) IN ( 
+                   '2015', '2016', '2017', '2018', 
+                   '2019', '2020' ) 
+               AND Month(i.prospect_fafsa_date_received) = 3 
+        UNION 
+        SELECT j.sms_log_id, 
+               prospect_enroll_history.prospect_type, 
+               prospects.prospect_status, 
+               j.sms_timestamp AS Date, 
+               'Sent EIU Text' AS Action 
+        FROM   sms_log j 
+               JOIN prospects 
+                 ON j.prospect_id = prospects.prospect_id 
+               JOIN prospect_enroll_history 
+                 ON prospect_enroll_history.prospect_id = j.prospect_id 
+        WHERE  j.sms_timestamp IS NOT NULL 
+               AND Year(j.sms_timestamp) IN ( '2015', '2016', '2017', '2018', 
+                                              '2019', '2020' ) 
+               AND Month(j.sms_timestamp) = 3) z 
+       JOIN prospect_status y 
+         ON z.prospect_status = y.prospect_status_id 
+       JOIN prospect_types x 
+         ON x.prospect_type_id = z.prospect_type 
+ORDER  BY 5, 
+          4 
