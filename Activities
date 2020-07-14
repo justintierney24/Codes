@@ -1,0 +1,42 @@
+SELECT a.prospect_id, 
+       Concat(a.prospect_fname, ' ', a.prospect_lname) AS Name, 
+       c.app_resp_value                                AS Activity_ID, 
+       c.app_activity_desc                             AS Activity, 
+       c.app_activity_cat_desc                         AS Category, 
+       d.app_resp_value                                AS Years, 
+       CASE 
+         WHEN e.app_resp_value = 1 THEN 'Y' 
+         ELSE 'N' 
+       end                                             AS Leadership, 
+       b.app_term_appl 
+FROM   prospects a 
+       JOIN (SELECT * 
+             FROM   applications b 
+             WHERE  b.app_term_appl = 202190 
+                    AND b.app_type_id = 1 
+                    AND b.app_status = 'imported') b 
+         ON a.prospect_id = b.prospect_id 
+       JOIN (SELECT c.app_id, 
+                    c.app_resp_value, 
+                    d.app_activity_desc, 
+                    d.app_activity_cat_desc, 
+                    c.app_resp_count 
+             FROM   applications_responses c 
+                    JOIN app_activities d 
+                      ON d.app_activity_id = c.app_resp_value 
+             WHERE  c.app_question_id = 944) c 
+         ON c.app_id = b.app_id 
+       JOIN (SELECT c.app_id, 
+                    c.app_resp_value, 
+                    c.app_resp_count 
+             FROM   applications_responses c 
+             WHERE  c.app_question_id = 945) d 
+         ON d.app_id = c.app_id 
+            AND d.app_resp_count = c.app_resp_count 
+       JOIN (SELECT c.app_id, 
+                    c.app_resp_value, 
+                    c.app_resp_count 
+             FROM   applications_responses c 
+             WHERE  c.app_question_id = 946) e 
+         ON e.app_id = c.app_id 
+            AND c.app_resp_count = e.app_resp_count 
